@@ -1,22 +1,35 @@
-# do not forget to require your gem dependencies
-# do not forget to require_relative your local dependencies
+require_relative "presenter"
+require_relative "requester"
+require "httparty"
+require "json"
 
 class CliviaGenerator
-  # maybe we need to include a couple of modules?
+  include Requester
+  include Presenter
+  include HTTParty
+
+  base_uri("https://opentdb.com/api.php?amount=10")
 
   def initialize
-    # we need to initialize a couple of properties here
+    @user = nil
   end
 
   def start
-    # welcome message
-    # prompt the user for an action
-    # keep going until the user types exit
+    print_welcome
+    action = ""
+    
+    until action == "exit"
+      action = get_menu(["random", "scores", "exit"])
+      case action
+      when "random" then random
+      when "scores" then puts "scores"
+      when "exit" then puts "exit"
+      end
+    end
   end
 
   def random_trivia
-    # load the questions from the api
-    # questions are loaded, then let's ask them
+    ask_questions
   end
 
   def ask_questions
@@ -49,4 +62,4 @@ class CliviaGenerator
 end
 
 trivia = CliviaGenerator.new
-trivia.start
+trivia.random_trivia
