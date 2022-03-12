@@ -1,5 +1,6 @@
 require "httparty"
 require "json"
+require "htmlentities"
 
 module Requester
   include HTTParty
@@ -7,12 +8,13 @@ module Requester
   base_uri("https://opentdb.com/api.php?")
 
   def self.ask_question
-    response = get('amount=10')
+    coder = HTMLEntities.new
+    response = get("amount=10")
     a = JSON.parse(response.body, symbolize_names: true)
     score = 0
     for i in 0..9 do
       puts "Category: #{a[:results][i][:category]} | Difficulty: #{a[:results][i][:difficulty]}"
-      puts "Question: #{a[:results][i][:question]}"
+      puts "Question: #{coder.decode(a[:results][i][:question])}"
       score += gets_option(a[:results][i][:correct_answer], a[:results][i][:incorrect_answers])
     end
     will_save(score)
@@ -24,22 +26,19 @@ module Requester
     puts "Do you want to save your score? (y/n)"
     election = gets.chomp
     election = election.downcase
-    name = ""
+
     if election == "y"
       puts "Type the name to assign to the score"
       print "> "
       name = gets.chomp
-      if name.empty?
-        name = "Anonimous"
-      end
+      name = "Anonimous" if name.empty?
+      score({ name: name, score: score })
     else
-      print ""
+      puts ""
     end
-    score({name: name, score: score})
   end
 
   def self.gets_option(correct_answer, incorrect_answers)
-    election = ""
     answers = incorrect_answers
     answers.push(correct_answer)
     answers = answers.shuffle
@@ -70,11 +69,7 @@ module Requester
   def self.read_file
     File.open("table.json", "a+")
     JSON.parse(File.read("table.json"))
-
-    rescue JSON::ParserError 
+    rescue JSON::ParserError
       []
   end
-
 end
-
-a = Requester.ask_question
