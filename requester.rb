@@ -15,10 +15,10 @@ module Requester
       puts "Question: #{a[:results][i][:question]}"
       score += gets_option(a[:results][i][:correct_answer], a[:results][i][:incorrect_answers])
     end
-    will_save?(score)
+    will_save(score)
   end
 
-  def will_save?(score)
+  def self.will_save(score)
     puts "Well done! Your score is #{score}"
     puts "--------------------------------------------------"
     puts "Do you want to save your score? (y/n)"
@@ -29,12 +29,13 @@ module Requester
       puts "Type the name to assign to the score"
       print "> "
       name = gets.chomp
-      name = "Anonymous" if name.empty?
+      if name.empty?
+        name = "Anonimous"
+      end
     else
       print ""
     end
-    # grab user input
-    # prompt the user to give the score a name if there is no name given, set it as Anonymous
+    score({name: name, score: score})
   end
 
   def self.gets_option(correct_answer, incorrect_answers)
@@ -48,7 +49,7 @@ module Requester
     print "> "
     election = gets.chomp.to_i
     if answers[election - 1] == correct_answer
-      score = 20
+      score = 10
     else
       puts "#{answers[election - 1]}... Incorrect!"
       puts "The correct answer was #{correct_answer}"
@@ -57,6 +58,23 @@ module Requester
     puts ""
     score
   end
+
+  def self.score(player_score)
+    filescore = read_file
+    filescore.push(player_score)
+    File.open("table.json", "w") do |file|
+      file.write(JSON.pretty_generate(filescore))
+    end
+  end
+
+  def self.read_file
+    File.open("table.json", "a+")
+    JSON.parse(File.read("table.json"))
+
+    rescue JSON::ParserError 
+      []
+  end
+
 end
 
 a = Requester.ask_question

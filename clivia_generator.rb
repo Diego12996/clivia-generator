@@ -6,9 +6,6 @@ require "json"
 class CliviaGenerator
   include Requester
   include Presenter
-  include HTTParty
-
-  base_uri("https://opentdb.com/api.php?amount=10")
 
   def initialize
     @user = nil
@@ -30,6 +27,7 @@ class CliviaGenerator
 
   def random_trivia
     ask_questions
+    start
   end
 
   def ask_questions
